@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yearly Effort Saved Report Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 16px;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4a90e2 0%, #5ba3f5 100%);
+            color: white;
+            padding: 20px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 4px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.95;
+            margin: 0;
+        }
+
+        .content {
+            padding: 20px 24px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #fafbfc;
+            border-radius: 6px;
+            border-left: 3px solid #4a90e2;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: white;
+            line-height: 1.4;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 10px 16px;
+            background: #4a90e2;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-input-label:hover {
+            background: #3a7bc8;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            background: #3a7bc8;
+            box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .preview-section {
+            margin-top: 20px;
+            padding: 16px;
+            background: #fff;
+            border: 1px dashed #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .preview-section h2 {
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .email-preview {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+
+        /* Email Template Styles */
+        .email-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .email-logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .email-body {
+            padding: 40px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .email-greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .email-content {
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        .highlight-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 5px;
+        }
+
+        .total-hours {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .data-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .data-table tr:hover {
+            background: #e9ecef;
+        }
+
+        .chart-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .email-signature {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+
+        .signature-line {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .signature-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .email-footer {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .info-text {
+            color: #718096;
+            font-size: 12px;
+            margin-top: 4px;
+            font-style: normal;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Yearly Effort Saved Report Generator</h1>
+            <p>Create Professional Email Templates for Automation Team Reports</p>
+        </div>
+
+        <div class="content">
+            <!-- Configuration Section -->
+            <div class="section">
+                <h2>📝 Report Configuration</h2>
+                <div class="input-group">
+                    <label for="fyYear">Financial Year (e.g., 24-25)</label>
+                    <input type="text" id="fyYear" value="24-25" placeholder="24-25">
+                </div>
+                <div class="input-group">
+                    <label for="senderName">Your Name</label>
+                    <input type="text" id="senderName" value="Automation Team Lead" placeholder="Your Name">
+                </div>
+                <div class="input-group">
+                    <label for="senderTitle">Your Title</label>
+                    <input type="text" id="senderTitle" value="Lead - Automation Team" placeholder="Your Title">
+                </div>
+                <div class="input-group">
+                    <label for="senderEmail">Your Email</label>
+                    <input type="email" id="senderEmail" value="automation.lead@company.com" placeholder="your.email@company.com">
+                </div>
+                <div class="input-group">
+                    <label for="companyName">Company/Department Name</label>
+                    <input type="text" id="companyName" value="Automation Team" placeholder="Company/Department Name">
+                </div>
+            </div>
+
+            <!-- CSV Upload Section -->
+            <div class="section">
+                <h2>📁 Upload CSV Data</h2>
+                <div class="input-group">
+                    <label>Select CSV File</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="csvFile" accept=".csv">
+                        <label for="csvFile" class="file-input-label">Choose CSV File</label>
+                    </div>
+                    <p class="info-text">CSV should have columns: Track Name, Efforts Saved Per Month (Months), Efforts Saved Per Year (Hours)</p>
+                </div>
+                <button class="btn" onclick="loadDefaultData()">Load Sample Data</button>
+            </div>
+
+            <!-- Email Content Customization -->
+            <div class="section">
+                <h2>✉️ Email Content</h2>
+                <div class="input-group">
+                    <label for="emailGreeting">Greeting</label>
+                    <input type="text" id="emailGreeting" value="Dear Team," placeholder="Dear Team,">
+                </div>
+                <div class="input-group">
+                    <label for="emailIntro">Introduction Text</label>
+                    <textarea id="emailIntro" placeholder="We are pleased to share...">We are pleased to share that for the Financial Year 24-25, our Automation Team has achieved significant milestones in effort optimization and process efficiency.</textarea>
+                </div>
+                <div class="input-group">
+                    <label for="emailPlanned">Planned Use Cases Text</label>
+                    <textarea id="emailPlanned" placeholder="Currently, we have many planned use cases...">Currently, we have many planned use cases in our pipeline that may prove even more effective in the coming months. Our continuous improvement initiatives are focused on expanding automation coverage and enhancing operational efficiency across all business units.</textarea>
+                </div>
+                <div class="input-group">
+                    <label for="emailClosing">Closing Text</label>
+                    <textarea id="emailClosing" placeholder="Thank you for your continued support...">Thank you for your continued support and collaboration. We look forward to sharing more updates as we progress with our automation initiatives.</textarea>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn btn-success" onclick="generateEmail()">🚀 Generate Email Template</button>
+                <button class="btn" onclick="downloadHTML()" id="downloadBtn" style="display: none;">💾 Download HTML</button>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section hidden" id="previewSection">
+                <h2 style="margin-bottom: 20px;">📧 Email Preview</h2>
+                <div class="email-preview" id="emailPreview"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let csvData = [];
+        let chartInstance = null;
+
+        // Load default CSV data
+        function loadDefaultData() {
+            const defaultData = `Track Name,Use Case,Efforts Saved Per Month (Months),Efforts Saved Per Year (Hours)
+RPA Automation,Invoice Processing,1.2,120
+RPA Automation,Data Entry,1.3,130
+Process Optimization,Workflow Streamlining,1.8,180
+Data Migration,Legacy System Migration,3.2,320
+Workflow Automation,Approval Automation,2.1,210
+System Integration,API Integration,1.5,150
+Quality Assurance,Automated Testing,1.2,120
+Reporting Automation,Dashboard Generation,0.9,90`;
+
+            parseCSV(defaultData);
+            alert('Sample data loaded successfully!');
+        }
+
+        // Parse CSV data - Dynamic header support with use cases
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            // Store headers for dynamic use
+            window.csvHeaders = headers;
+            
+            // Detect column structure
+            const trackIndex = headers.findIndex(h => h.toLowerCase().includes('track'));
+            const useCaseIndex = headers.findIndex(h => h.toLowerCase().includes('use case') || h.toLowerCase().includes('usecase'));
+            const monthlyIndex = headers.findIndex(h => h.toLowerCase().includes('month'));
+            const yearlyIndex = headers.findIndex(h => h.toLowerCase().includes('year'));
+            
+            csvData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                if (values.length >= Math.max(trackIndex, monthlyIndex, yearlyIndex) + 1) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] || '';
+                    });
+                    
+                    const trackName = trackIndex >= 0 ? values[trackIndex] : values[0];
+                    const useCase = useCaseIndex >= 0 ? values[useCaseIndex] : '';
+                    const monthlyEffort = monthlyIndex >= 0 ? parseFloat(values[monthlyIndex]) : (yearlyIndex >= 0 ? parseFloat(values[yearlyIndex]) / 12 : 0);
+                    const yearlyEffort = yearlyIndex >= 0 ? parseFloat(values[yearlyIndex]) : (monthlyIndex >= 0 ? parseFloat(values[monthlyIndex]) * 12 : 0);
+                    
+                    csvData.push({
+                        trackName: trackName || '',
+                        useCase: useCase || trackName, // If no use case column, use track name
+                        monthlyEffort: monthlyEffort || 0,
+                        yearlyEffort: yearlyEffort || 0,
+                        rawData: row // Store all columns for dynamic access
+                    });
+                }
+            }
+        }
+
+        // Handle CSV file upload
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    parseCSV(event.target.result);
+                    alert('CSV file loaded successfully! ' + csvData.length + ' tracks found.');
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Calculate totals and group data
+        function calculateTotals() {
+            const totalHours = csvData.reduce((sum, item) => sum + item.yearlyEffort, 0);
+            const totalMonths = csvData.reduce((sum, item) => sum + item.monthlyEffort, 0);
+            const totalHoursPerMonth = totalMonths * 160; // Convert months to hours (assuming 160 hrs/month)
+            
+            // Group by track
+            const trackGroups = {};
+            csvData.forEach(item => {
+                if (!trackGroups[item.trackName]) {
+                    trackGroups[item.trackName] = {
+                        trackName: item.trackName,
+                        monthlyEffort: 0,
+                        yearlyEffort: 0,
+                        useCases: []
+                    };
+                }
+                trackGroups[item.trackName].monthlyEffort += item.monthlyEffort;
+                trackGroups[item.trackName].yearlyEffort += item.yearlyEffort;
+                trackGroups[item.trackName].useCases.push({
+                    name: item.useCase,
+                    monthlyEffort: item.monthlyEffort,
+                    yearlyEffort: item.yearlyEffort
+                });
+            });
+            
+            const trackData = Object.values(trackGroups);
+            const trackCount = trackData.length;
+            const useCaseCount = csvData.length;
+            
+            return { 
+                totalHours, 
+                totalMonths, 
+                totalHoursPerMonth, 
+                trackCount, 
+                useCaseCount,
+                trackData,
+                useCaseData: csvData
+            };
+        }
+
+        // Generate email HTML
+        function generateEmail() {
+            if (csvData.length === 0) {
+                alert('Please load CSV data first!');
+                return;
+            }
+
+            const fyYear = document.getElementById('fyYear').value || '24-25';
+            const senderName = document.getElementById('senderName').value || 'Automation Team Lead';
+            const senderTitle = document.getElementById('senderTitle').value || 'Lead - Automation Team';
+            const senderEmail = document.getElementById('senderEmail').value || 'automation.lead@company.com';
+            const companyName = document.getElementById('companyName').value || 'Automation Team';
+            const greeting = document.getElementById('emailGreeting').value || 'Dear Team,';
+            const intro = document.getElementById('emailIntro').value || '';
+            const planned = document.getElementById('emailPlanned').value || '';
+            const closing = document.getElementById('emailClosing').value || '';
+
+            const totals = calculateTotals();
+
+            // Prepare chart data for script - Track based and Use Case based
+            const trackLabels = JSON.stringify(totals.trackData.map(item => item.trackName));
+            const trackDataValues = JSON.stringify(totals.trackData.map(item => item.yearlyEffort));
+            const useCaseLabels = JSON.stringify(totals.useCaseData.map(item => item.useCase || item.trackName));
+            const useCaseDataValues = JSON.stringify(totals.useCaseData.map(item => item.yearlyEffort));
+
+            // Generate email HTML - build in parts to handle script section
+            const emailHTMLPart1 = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yearly Effort Saved Report - FY ${fyYear}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            line-height: 1.5;
+        }
+        .email-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+        }
+        .email-header {
+            background: #2c3e50;
+            color: white;
+            padding: 16px 24px;
+            text-align: center;
+            border-bottom: 3px solid #34495e;
+        }
+        .email-logo {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .email-body {
+            padding: 20px 24px;
+            color: #2c3e50;
+            line-height: 1.4;
+            font-size: 13px;
+        }
+        .email-greeting {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .highlight-box {
+            background: #ecf0f1;
+            border-left: 3px solid #2c3e50;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 2px;
+        }
+        .total-hours {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            margin: 12px 0;
+            padding: 12px;
+            background: #ecf0f1;
+            border-radius: 2px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 12px;
+            border-radius: 2px;
+            text-align: center;
+            border: 1px solid #bdc3c7;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 11px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 12px;
+            border: 1px solid #bdc3c7;
+        }
+        .data-table th {
+            background: #34495e;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            border: 1px solid #2c3e50;
+        }
+        .data-table td {
+            padding: 6px 8px;
+            border: 1px solid #bdc3c7;
+            background: white;
+        }
+        .data-table tr:nth-child(even) td {
+            background: #f8f9fa;
+        }
+        .data-table tr:last-child {
+            font-weight: 600;
+            background: #ecf0f1;
+        }
+        .data-table tr:last-child td {
+            background: #ecf0f1;
+        }
+        .chart-container {
+            margin: 12px 0;
+            padding: 12px;
+            background: white;
+            border: 1px solid #bdc3c7;
+            text-align: center;
+        }
+        .chart-wrapper {
+            max-width: 350px;
+            margin: 0 auto;
+        }
+        .email-signature {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #bdc3c7;
+        }
+        .signature-line {
+            margin: 2px 0;
+            color: #2c3e50;
+            font-size: 12px;
+        }
+        .signature-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+        .email-footer {
+            background: #ecf0f1;
+            padding: 10px 24px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 10px;
+            border-top: 1px solid #bdc3c7;
+        }
+        .bold-text {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        h3 {
+            color: #2c3e50;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        p {
+            margin: 8px 0;
+        }
+        @media only screen and (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .email-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-header">
+            <div class="email-logo">${companyName.toUpperCase()}</div>
+            <div style="font-size: 14px; margin-top: 4px;">Yearly Effort Saved Report</div>
+            <div style="font-size: 12px; margin-top: 2px; opacity: 0.9;">Financial Year ${fyYear}</div>
+        </div>
+        
+        <div class="email-body">
+            <div class="email-greeting">${greeting}</div>
+            
+            <div class="email-content">
+                ${intro ? `<p>${intro}</p>` : ''}
+                
+                <div class="highlight-box">
+                    <p class="bold-text" style="font-size: 18px; margin-bottom: 15px;">Key Achievements for FY ${fyYear}:</p>
+                    <div class="total-hours">${totals.totalHours.toLocaleString()} Hours Saved</div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${totals.totalHours.toLocaleString()}</div>
+                        <div class="stat-label">Total Hours Saved</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${(totals.totalMonths * 160).toFixed(0)}</div>
+                        <div class="stat-label">Hrs Saved/Month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totals.trackCount}</div>
+                        <div class="stat-label">Active Tracks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totals.useCaseCount}</div>
+                        <div class="stat-label">Use Cases</div>
+                    </div>
+                </div>
+                
+                <h3 style="color: #2c3e50; margin-top: 16px; margin-bottom: 8px; font-size: 14px;">Detailed Breakdown by Track & Use Case</h3>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Track Name</th>
+                            <th>Use Case</th>
+                            <th>Saved Hrs in Month</th>
+                            <th>Saved Hrs Per Year</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${totals.trackData.map(track => {
+                            const rows = track.useCases.map((uc, idx) => `
+                                <tr>
+                                    ${idx === 0 ? `<td rowspan="${track.useCases.length}" style="vertical-align: middle;"><strong>${track.trackName}</strong></td>` : ''}
+                                    <td>${uc.name}</td>
+                                    <td>${(uc.monthlyEffort * 160).toFixed(0)}</td>
+                                    <td>${uc.yearlyEffort.toLocaleString()}</td>
+                                </tr>
+                            `).join('');
+                            return rows;
+                        }).join('')}
+                        <tr>
+                            <td colspan="2"><strong>Total</strong></td>
+                            <td><strong>${(totals.totalMonths * 160).toFixed(0)}</strong></td>
+                            <td><strong>${totals.totalHours.toLocaleString()}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">
+                    <div class="chart-container">
+                        <h3 style="color: #2c3e50; margin-bottom: 8px; font-size: 14px;">By Track</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="trackChart" width="280" height="280"></canvas>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <button onclick="exportChart('trackChart', 'track-chart.png')" style="padding: 6px 12px; background: #2c3e50; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Copy Chart</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 style="color: #2c3e50; margin-bottom: 8px; font-size: 14px;">By Use Case</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="useCaseChart" width="280" height="280"></canvas>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <button onclick="exportChart('useCaseChart', 'usecase-chart.png')" style="padding: 6px 12px; background: #2c3e50; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Copy Chart</button>
+                        </div>
+                    </div>
+                </div>
+                
+                ${planned ? `<p class="bold-text" style="font-size: 13px; margin-top: 16px; margin-bottom: 8px;">Future Outlook:</p><p style="margin: 8px 0;">${planned}</p>` : ''}
+                
+                ${closing ? `<p style="margin-top: 16px;">${closing}</p>` : ''}
+            </div>
+            
+            <div class="email-signature">
+                <div class="signature-name">${senderName}</div>
+                <div class="signature-line">${senderTitle}</div>
+                <div class="signature-line">${companyName}</div>
+                <div class="signature-line">${senderEmail}</div>
+            </div>
+        </div>
+        
+        <div class="email-footer">
+            <p>This is an automated report generated by the Automation Team</p>
+            <p style="margin-top: 5px;">© ${new Date().getFullYear()} ${companyName}. All rights reserved.</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+    <script>
+        // Excel color palette
+        const excelColors = [
+            '#4472C4', '#ED7D31', '#A5A5A5', '#FFC000',
+            '#5B9BD5', '#70AD47', '#7030A0', '#C00000',
+            '#0070C0', '#00B050', '#FF0000', '#002060',
+            '#7030A0', '#C55A11', '#70AD47', '#FFC000'
+        ];
+        
+        // Function to export chart as image
+        function exportChart(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Also copy to clipboard for Outlook
+                canvas.toBlob(function(blob) {
+                    const item = new ClipboardItem({ 'image/png': blob });
+                    navigator.clipboard.write([item]).then(function() {
+                        alert('Chart copied to clipboard! You can paste it in Outlook.');
+                    }).catch(function(err) {
+                        console.log('Clipboard copy failed:', err);
+                        alert('Chart downloaded. Please insert manually in Outlook.');
+                    });
+                });
+            }, 'image/png');
+        }
+        
+        // Generate Track-based pie chart
+        const trackCtx = document.getElementById('trackChart').getContext('2d');
+        const trackLabelsArray = ${trackLabels};
+        const trackChartData = {
+            labels: trackLabelsArray,
+            datasets: [{
+                data: ${trackDataValues},
+                backgroundColor: excelColors.slice(0, trackLabelsArray.length),
+                borderWidth: 1,
+                borderColor: '#ffffff'
+            }]
+        };
+        
+        window.trackChart = new Chart(trackCtx, {
+            type: 'pie',
+            data: trackChartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 6,
+                            font: { size: 10 },
+                            boxWidth: 10
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': ' + value.toLocaleString() + ' hrs (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Generate Use Case-based pie chart
+        const useCaseCtx = document.getElementById('useCaseChart').getContext('2d');
+        const useCaseLabelsArray = ${useCaseLabels};
+        const useCaseChartData = {
+            labels: useCaseLabelsArray,
+            datasets: [{
+                data: ${useCaseDataValues},
+                backgroundColor: excelColors.slice(0, useCaseLabelsArray.length),
+                borderWidth: 1,
+                borderColor: '#ffffff'
+            }]
+        };
+        
+        window.useCaseChart = new Chart(useCaseCtx, {
+            type: 'pie',
+            data: useCaseChartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 6,
+                            font: { size: 10 },
+                            boxWidth: 10
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': ' + value.toLocaleString() + ' hrs (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    <\/script>
+</body>
+</html>`;
+            
+            // Use the complete template
+            const emailHTML = emailHTMLPart1;
+
+            // Display preview
+            document.getElementById('emailPreview').innerHTML = emailHTML;
+            document.getElementById('previewSection').classList.remove('hidden');
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+            
+            // Store email HTML for download
+            window.generatedEmailHTML = emailHTML;
+            
+            // Render chart in preview
+            setTimeout(() => {
+                renderChartInPreview();
+            }, 100);
+        }
+
+        // Render charts in preview
+        function renderChartInPreview() {
+            const previewFrame = document.getElementById('emailPreview');
+            const trackCanvas = previewFrame.querySelector('#trackChart');
+            const useCaseCanvas = previewFrame.querySelector('#useCaseChart');
+            const totals = calculateTotals();
+            
+            const excelColors = [
+                '#4472C4', '#ED7D31', '#A5A5A5', '#FFC000',
+                '#5B9BD5', '#70AD47', '#7030A0', '#C00000',
+                '#0070C0', '#00B050', '#FF0000', '#002060'
+            ];
+            
+            // Render Track chart
+            if (trackCanvas && totals.trackData.length > 0) {
+                const trackCtx = trackCanvas.getContext('2d');
+                if (window.trackChartInstance) {
+                    window.trackChartInstance.destroy();
+                }
+                
+                window.trackChartInstance = new Chart(trackCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: totals.trackData.map(item => item.trackName),
+                        datasets: [{
+                            data: totals.trackData.map(item => item.yearlyEffort),
+                            backgroundColor: excelColors.slice(0, totals.trackData.length),
+                            borderWidth: 1,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 6,
+                                    font: { size: 10 },
+                                    boxWidth: 10
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const percentage = ((value / totals.totalHours) * 100).toFixed(1);
+                                        return label + ': ' + value.toLocaleString() + ' hrs (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Render Use Case chart
+            if (useCaseCanvas && totals.useCaseData.length > 0) {
+                const useCaseCtx = useCaseCanvas.getContext('2d');
+                if (window.useCaseChartInstance) {
+                    window.useCaseChartInstance.destroy();
+                }
+                
+                window.useCaseChartInstance = new Chart(useCaseCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: totals.useCaseData.map(item => item.useCase || item.trackName),
+                        datasets: [{
+                            data: totals.useCaseData.map(item => item.yearlyEffort),
+                            backgroundColor: excelColors.slice(0, totals.useCaseData.length),
+                            borderWidth: 1,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 6,
+                                    font: { size: 10 },
+                                    boxWidth: 10
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const percentage = ((value / totals.totalHours) * 100).toFixed(1);
+                                        return label + ': ' + value.toLocaleString() + ' hrs (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Download HTML
+        function downloadHTML() {
+            if (!window.generatedEmailHTML) {
+                alert('Please generate email first!');
+                return;
+            }
+            
+            const blob = new Blob([window.generatedEmailHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Effort_Saved_Report_FY_${document.getElementById('fyYear').value || '24-25'}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize with sample data on load
+        window.addEventListener('load', function() {
+            loadDefaultData();
+        });
+    </script>
+</body>
+</html>
